@@ -1,10 +1,14 @@
 
 {
   "$schema": "https://openapi.vercel.sh/vercel.json",
-  "rewrites": [
+  "builds": [
     {
-      "source": "/",
-      "destination": "/index.html"
+      "src": "*.html",
+      "use": "@vercel/static"
+    },
+    {
+      "src": "api/index.py",
+      "use": "@vercel/python"
     }
   ]
 }
