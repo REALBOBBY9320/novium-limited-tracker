@@ -1,0 +1,129 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Novium Limited Tracker</title>
+<style>
+*{box-sizing:border-box}
+body{margin:0;background:#090b12;color:#f4f5fa;font-family:Arial,sans-serif}
+header{padding:22px 18px;border-bottom:1px solid #202432;background:#0e111b}
+.logo{font-size:22px;font-weight:800}
+.logo span{color:#8b75ff}
+.subtitle{color:#9299aa;font-size:12px;margin-top:6px}
+main{max-width:1100px;margin:auto;padding:22px 16px}
+.status{display:flex;align-items:center;gap:9px;color:#a9afc0;font-size:13px;margin-bottom:22px}
+.dot{width:9px;height:9px;border-radius:50%;background:#e5a43a}
+h1{font-size:27px;margin:0 0 8px}
+.description{color:#9299aa;font-size:14px;line-height:1.5}
+.stats{display:grid;grid-template-columns:repeat(2,1fr);gap:12px;margin:24px 0}
+.stat{background:#121725;border:1px solid #252c3d;padding:17px;border-radius:13px}
+.stat small{color:#9299aa}
+.stat strong{display:block;font-size:27px;margin-top:10px}
+.controls{display:flex;flex-wrap:wrap;gap:9px;margin:22px 0}
+button{background:#171d2d;color:#d9ddec;border:1px solid #30394e;border-radius:9px;padding:11px 15px;font-weight:600}
+button.active{background:#7560ed;border-color:#7560ed;color:white}
+input{width:100%;padding:14px;background:#121725;border:1px solid #30394e;border-radius:10px;color:white;font-size:15px}
+.panel{background:#121725;border:1px solid #252c3d;border-radius:13px;margin-top:15px;overflow:hidden}
+.panel-head{padding:17px;border-bottom:1px solid #252c3d;font-weight:700}
+.empty{text-align:center;padding:42px 18px;color:#9299aa;line-height:1.6}
+.empty strong{display:block;color:#f4f5fa;font-size:17px;margin-bottom:8px}
+footer{text-align:center;color:#626b7e;font-size:12px;padding:30px}
+@media(min-width:650px){.stats{grid-template-columns:repeat(4,1fr)}}
+</style>
+</head>
+<body>
+<header>
+ <div class="logo">NOVIUM <span>TRACKER</span></div>
+ <div class="subtitle">Limited Item Monitoring Dashboard</div>
+</header>
+<main>
+ <div class="status"><span class="dot" id="dot"></span><span id="connection">Checking API connection...</span></div>
+
+ <h1>Catalog Overview</h1>
+ <p class="description">Track new releases, Limiteds, upcoming drops and item sale-status changes.</p>
+
+ <section class="stats">
+  <div class="stat"><small>Total Items</small><strong id="total">0</strong></div>
+  <div class="stat"><small>Limited Items</small><strong id="limited">0</strong></div>
+  <div class="stat"><small>Offsale Items</small><strong id="offsale">0</strong></div>
+  <div class="stat"><small>New Releases</small><strong id="new">0</strong></div>
+ </section>
+
+ <input id="search" placeholder="Search items by name or ID..." />
+
+ <div class="controls">
+  <button class="active" data-filter="all">All Items</button>
+  <button data-filter="limited">Limiteds</button>
+  <button data-filter="offsale">Offsale</button>
+  <button data-filter="onsale">Onsale</button>
+  <button data-filter="upcoming">Upcoming</button>
+ </div>
+
+ <section class="panel">
+  <div class="panel-head" id="heading">Recent Catalog Items</div>
+  <div class="empty">
+   <strong id="emptyTitle">Waiting for catalog connection</strong>
+   <span id="emptyText">Your dashboard is ready. Real Novium item data has not been connected yet.</span>
+  </div>
+ </section>
+
+ <section class="panel">
+  <div class="panel-head">Monitoring Information</div>
+  <div style="padding:17px;color:#9299aa;font-size:13px;line-height:2">
+   <div>Website: <span style="color:#f4f5fa">novium.live</span></div>
+   <div>API: <span id="apiStatus">Checking...</span></div>
+   <div>Last check: <span id="lastCheck">Not checked</span></div>
+   <div>Automatic monitoring: <span style="color:#e5a43a">Not configured</span></div>
+  </div>
+ </section>
+</main>
+<footer>Novium Limited Tracker · Dashboard Preview</footer>
+
+<script>
+const buttons=document.querySelectorAll("[data-filter]");
+const heading=document.getElementById("heading");
+const search=document.getElementById("search");
+
+const labels={
+ all:"Recent Catalog Items",
+ limited:"Limited Items",
+ offsale:"Offsale Items",
+ onsale:"Onsale Items",
+ upcoming:"Upcoming Drops"
+};
+
+buttons.forEach(button=>{
+ button.addEventListener("click",()=>{
+  buttons.forEach(b=>b.classList.remove("active"));
+  button.classList.add("active");
+  heading.textContent=labels[button.dataset.filter];
+ });
+});
+
+search.addEventListener("input",()=>{
+ const title=document.getElementById("emptyTitle");
+ title.textContent=search.value
+  ?"No matching items yet"
+  :"Waiting for catalog connection";
+});
+
+async function checkAPI(){
+ try{
+  const response=await fetch("/api");
+  if(!response.ok) throw new Error("API unavailable");
+  const data=await response.json();
+  document.getElementById("connection").textContent="API connected · "+data.status;
+  document.getElementById("apiStatus").textContent="Online";
+  document.getElementById("dot").style.background="#36ce91";
+ }catch(error){
+  document.getElementById("connection").textContent="API connection unavailable";
+  document.getElementById("apiStatus").textContent="Unavailable";
+ }
+ document.getElementById("lastCheck").textContent=new Date().toLocaleString();
+}
+checkAPI();
+</script>
+</body>
+</html>
